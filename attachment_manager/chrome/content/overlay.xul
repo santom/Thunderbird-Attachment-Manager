@@ -13,6 +13,7 @@
         document.getElementById("attachment_sidebarframe").contentDocument.location = "chrome://attachment_manager/content/attachment_sidebar.xul";
         window.removeEventListener("load", loadAttachmentSidebar, false);
         attachment_manager.addListeners();
+        document.getElementById("attachmentView").style.display="none";
         attachment_sidebar = true;
       }
     }
@@ -24,6 +25,7 @@
         document.getElementById("attachment_container").hidden = true;
         document.getElementById("folderPaneSplitter").hidden = true;
         attachment_sidebar = false;
+        document.getElementById("attachmentView").style.display="block";
         attachment_manager.removeListeners();
       } else {
         document.getElementById("attachment_container").hidden = false;
@@ -40,13 +42,10 @@
     <menuitem id="attachment_menuitem" label="Attachment Pane" insertafter="javaScriptConsole" oncommand="toggleAttachmentSidebar();"/>
   </menupopup>
 
-  <vbox id="folderPaneBox">
+  <vbox id="messagepanebox">
   
-    <tree id="folderTree" flex="1"/>
 
-    <splitter id="folderPaneSplitter" insertafter="folderTree" hidden="false" persist="hidden"/>
-
-    <vbox id="attachment_container" insertafter="folderPaneSplitter" hidden="false" persist="height hidden">
+    <vbox id="attachment_container" maxheight="170" hidden="false" persist="height hidden">
       <sidebarheader align="center">
         <label value="Attachment View" id="attachment_header"/>
         <spacer flex="1"/>

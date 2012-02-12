@@ -20,17 +20,18 @@ var attachment_manager = {
 
 //function to select all / deselect all the attachments in the list box.
 function selectall() {
+Application.console.log("message") 
     var listbox = document.getElementById("attachment_sidebarframe").contentDocument.getElementById("listbox");
     if (document.getElementById("attachment_sidebarframe").contentDocument.getElementById("selall").checked == true) {
-        for (i = 0; i < listbox.getRowCount(); i++) {
-            var item = listbox.getItemAtIndex(i).getElementsByTagName("checkbox")[0];
+        for (i = 0; i < listbox.getElementsByTagName("richlistitem").length; i++) {
+            var item = listbox.getElementsByTagName("richlistitem")[i].getElementsByTagName("checkbox")[0];
             if (item.checked == false) {
                 item.checked = true;
             }
         }
     } else {
-        for (i = 0; i < listbox.getRowCount(); i++) {
-            var item = listbox.getItemAtIndex(i).getElementsByTagName("checkbox")[0];
+        for (i = 0; i < listbox.getElementsByTagName("richlistitem").length; i++) {
+            var item = listbox.getElementsByTagName("richlistitem")[i].getElementsByTagName("checkbox")[0];
             if (item.checked == true) {
                 item.checked = false;
             }
@@ -44,11 +45,13 @@ function refreshPane() {
     let msgHdrs = gFolderDisplay.selectedMessages;
     var i = 0;
     var params = new Array();
+    
     for (i = 0; i < gFolderDisplay.selectedCount; i++) {
         MsgHdrToMimeMessage(msgHdrs[i], null, function (aMsgHdr, aMimeMessage) {
             let attachments = aMimeMessage.allAttachments;
             attachments = attachments.filter(function (x) x.isRealAttachment);
             params = params.concat(attachments);
+            
         }, true);
     }
     
@@ -58,12 +61,38 @@ function refreshPane() {
     setTimeout(
 
     function () {
+        
         var listbox = document.getElementById("attachment_sidebarframe").contentDocument.getElementById("listbox");
+        
         var tooltip = clearList(listbox);
+        
         var i = 0;
         for (i = 0; i < params.length; i++) {
-            listbox.appendChild(createListItem(params[i], params[i].name, "moz-icon://" + params[i].name + "?size=40&contentType=" + params[i].contentType));
+            var item = createListItem(params[i], params[i].name, "moz-icon://" + params[i].name + "?size=40&contentType=" + params[i].contentType)
+            listbox.appendChild(item);
+            item.oncontextmenu = function(){
+            var name=prompt("Enter the new name with extension",this.value.name);
+            if (name!=null && name!=""){
+                  this.value.name = name;
+                  this.getElementsByTagName("label")[0].value = name;
+                
+              }
+               
+            };
+            item.ondblclick = function(){
+                var att = new Array();
+                att.push(item.value);
+                //alert(item.value.name);
+                var path = getFilePath();
+                saveAttachments(att, path);
+                return true;
+            };
         }
+        if(params.length > 1)
+        document.getElementById("attachment_header").value="Attachment View ("+params.length+" attachments)";
+        else if(params.length == 1)
+        document.getElementById("attachment_header").value="Attachment View ("+params.length+" attachment)";
+        else document.getElementById("attachment_header").value="Attachment View";
     }, 1000)
 }
 
@@ -94,11 +123,12 @@ function createListItem(att, name, src) {
         dialog.appendChild(tooltip);
         item.tooltip = tooltip.id;
     } else {
-        item.tooltipText = name;
+        //item.tooltipText = name;
     }
     item.appendChild(check);
     item.appendChild(image);
     item.appendChild(label);
+    
     return item;
 }
 
@@ -121,9 +151,9 @@ function download() {
 function getSelectedAttachments() {
     var listbox = document.getElementById("listbox");
     var attachments = new Array();
-    for (i = 0; i < listbox.getRowCount(); i++) {
-        if (listbox.getItemAtIndex(i).getElementsByTagName("checkbox")[0].checked == true) {
-            attachments.push(listbox.getItemAtIndex(i).value);
+    for (i = 0; i < listbox.getElementsByTagName("richlistitem").length; i++) {
+        if (listbox.getElementsByTagName("richlistitem")[i].getElementsByTagName("checkbox")[0].checked == true) {
+            attachments.push(listbox.getElementsByTagName("richlistitem")[i].value);
         }
     }
     return attachments;
@@ -168,9 +198,14 @@ function saveAttachments(att, fullfilepath) {
 
 //function that resets the listbox to empty.
 function clearList(listbox) {
-    var times = listbox.getRowCount();
+
+    var times = listbox.getElementsByTagName("richlistitem").length;
+   
+   
     for (i = 0; i < times; i++) {
-        listbox.removeItemAt(0);
+        element = listbox.getElementsByTagName("richlistitem")[0];
+       
+        element.parentNode.removeChild(element);
     }
 }
 
